@@ -11,9 +11,11 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    // .populate(['owner', 'likes']) // разобраться
     .then((card) => {
-      res.send(card);
+      // кладем в поле owner одноименный объект со всеми характеристиками владельца карточки
+      Card.findById(card._id).populate(['owner', 'likes'])
+        .then((fullVersionCard) => res.send(fullVersionCard))
+        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
