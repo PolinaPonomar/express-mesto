@@ -1,8 +1,22 @@
-const { PORT = 3000 } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
+const { userRoutes } = require('./routes/users');
+
+const { PORT = 3000 } = process.env;
 
 const app = express();
+
+app.use(express.json());
+
+// app.get('/', (req, res) => {
+//   res.send('hello!:)');
+// });
+
+// app.post('/', (req, res) => {
+//   res.send(req.body);
+// });
+
+app.use('/users', userRoutes);
 
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb', {
