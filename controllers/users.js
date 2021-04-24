@@ -15,7 +15,13 @@ const getUserById = (req, res) => {
         res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
       }
     })
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректный _id пользователя' });
+      } else {
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
+      }
+    });
 };
 
 const createUser = (req, res) => {

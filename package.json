@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npx eslint",
+    "lint": "npx eslint .",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/PolinaPonomar/express-mesto.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Polina Ponomareva (https://github.com/PolinaPonomar)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/PolinaPonomar/express-mesto/issues"

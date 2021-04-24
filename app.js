@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { usersRouter } = require('./routes/users');
 const { cardsRouter } = require('./routes/cards');
+const { otherWaysRouter } = require('./routes/otherWays');
 
 const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
 
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
 });
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.use('*', otherWaysRouter);
 
 // подключаемся к серверу mongo
 mongoose.connect(MONGO_URL, {
