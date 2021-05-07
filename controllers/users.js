@@ -1,4 +1,7 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+
+const SOLT_ROUNDS = 10;
 
 const getUsers = (req, res) => {
   User.find({})
@@ -28,9 +31,10 @@ const createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  User.create({
-    name, about, avatar, email, password,
-  })
+  bcrypt.hash(password, SOLT_ROUNDS)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
