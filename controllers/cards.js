@@ -27,12 +27,20 @@ const createCard = (req, res) => {
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findOneAndRemove({ owner: req.user._id, _id: req.params.cardId })
     .then((card) => {
       if (card) {
         res.send({ message: 'Карточка удалена' });
       } else {
-        res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+        Card.findById(req.params.cardId)
+          .then((problemCard) => {
+            if (problemCard) {
+              res.status(405).send({ message: 'У вас нет прав удалить эту карточку' });
+            } else {
+              res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+            }
+          })
+          .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
       }
     })
     .catch((err) => {
