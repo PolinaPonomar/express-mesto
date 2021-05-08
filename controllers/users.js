@@ -15,6 +15,7 @@ const login = (req, res) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
+      // console.log(token);
       // res.send({ token }); //  прямо в ответ
       // через куки
       res.cookie('jwt', token, {
@@ -23,8 +24,6 @@ const login = (req, res) => {
         sameSite: true,
       })
         .end();
-      // тут предыдущий куки(!): (возможно нужно его выводить в след then?)
-      // console.log(req.cookies.jwt);
     })
     .catch((err) => res.status(401).send({ message: err.message }));
 };
