@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const { NODE_ENV, JWT_SECRET } = process.env;
+const JWT_SECRET = '071d5a0c28a4e7b50bb9712284f25c7fcf31c62680c024094011c56d70586c4e';
 const SOLT_ROUNDS = 10;
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 
@@ -12,7 +12,7 @@ const login = (req, res) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        JWT_SECRET,
         { expiresIn: '7d' },
       );
       // console.log(token);
@@ -36,14 +36,17 @@ const createUser = (req, res) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send(user))
+    .then(() => {
+      User.findOne({ email }).select('-password')
+        .then((user) => res.send(user))
+        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
       } else if (err.name === 'MongoError' && err.code === MONGO_DUPLICATE_ERROR_CODE) {
         res.status(409).send({ message: 'Пользователь с переданным email уже существует' });
       } else {
-        // res.send(err);
         res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
