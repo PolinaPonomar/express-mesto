@@ -4,6 +4,7 @@ const User = require('../models/user');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 const SOLT_ROUNDS = 10;
+const MONGO_DUPLICATE_ERROR_CODE = 11000;
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -39,9 +40,11 @@ const createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        // res.send(err);
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+      } else if (err.name === 'MongoError' && err.code === MONGO_DUPLICATE_ERROR_CODE) {
+        res.status(409).send({ message: 'Пользователь с переданным email уже существует' });
       } else {
+        // res.send(err);
         res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
