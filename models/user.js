@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -18,6 +19,10 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator: (value) => /^(http:\/\/|https)(www\.)?[\w\-\.\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]*\.[\w\-\.\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]*/.test(value),
+      message: '{VALUE} - невалидная ссылка', // необязательно, подобная строка прописывается автоматически
+    },
   },
   email: {
     type: String,
@@ -25,7 +30,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: (value) => validator.isEmail(value),
-      message: '{VALUE} is not a valid Email', // необязательно, подобная строка прописывается автоматически
+      message: '{VALUE} - невалидный email', // необязательно, подобная строка прописывается автоматически
     },
   },
   password: {
