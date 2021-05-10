@@ -6,7 +6,7 @@ const BadRequestError = require('../errors/bad-request-err');
 const ConflictError = require('../errors/conflict-err');
 const NotFoundError = require('../errors/not-found-err');
 
-const JWT_SECRET = '071d5a0c28a4e7b50bb9712284f25c7fcf31c62680c024094011c56d70586c4e';
+const { NODE_ENV, JWT_SECRET } = process.env;
 const SOLT_ROUNDS = 10;
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 
@@ -16,7 +16,7 @@ const login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        JWT_SECRET,
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
       res.cookie('jwt', token, {
@@ -24,7 +24,7 @@ const login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       })
-        .end();
+        .send({ message: 'Вы успешно вошли в аккаунт!' });
     })
     .catch((err) => { throw new UnauthorizedError(err.message); })
     .catch(next);

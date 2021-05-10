@@ -1,9 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
-const { login, createUser } = require('./controllers/users');
+
 const auth = require('./middlewares/auth');
+const centralizedErrorHandling = require('./middlewares/centralizedErrorHandling');
+const { login, createUser } = require('./controllers/users');
 const { usersRouter } = require('./routes/users');
 const { cardsRouter } = require('./routes/cards');
 const { otherWaysRouter } = require('./routes/otherWays');
@@ -18,6 +23,16 @@ mongoose.connect(MONGO_URL, {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+// защита от DoS-атак
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
+// простановкa security-заголовков для API
+app.use(helmet());
 
 // парсинг данных
 app.use(express.json());
@@ -36,7 +51,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().pattern(/^(https?:\/\/)(www\.)?[\w-]*\.[\w\W]*/),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -51,11 +66,8 @@ app.use('*', otherWaysRouter);
 // обработчик ошибок celebrate
 app.use(errors());
 
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
-});
+// централизованная обработка ошибок
+app.use(centralizedErrorHandling);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
