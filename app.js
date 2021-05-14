@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const auth = require('./middlewares/auth');
 const centralizedErrorHandling = require('./middlewares/centralizedErrorHandling');
@@ -38,6 +39,9 @@ app.use(express.json());
 // парсинг куки
 app.use(cookieParser());
 
+// подключаем логгер запросов
+app.use(requestLogger);
+
 // вход в аккаунт
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -55,12 +59,13 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
   }),
 }), createUser);
-
 app.use(auth);
-
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.use('*', otherWaysRouter);
+
+// подключаем логгер ошибок
+app.use(errorLogger);
 
 // обработчик ошибок celebrate
 app.use(errors());
